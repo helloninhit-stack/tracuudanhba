@@ -3,7 +3,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
 <style>
-/* Bố cục: một cột hẹp như bảng chỉ dẫn công trường. Ô tìm kiếm lớn ở trên, kết quả là các dòng có số điện thoại to, cùng một cột bên phải. */
+/* Bố cục: một cột hẹp như bảng chỉ dẫn công trường. Ô tìm kiếm lớn ở trên, mỗi dòng kết quả có đầu việc bên trái, người phụ trách và số điện thoại bên phải. */
 :root {
   --bg: #E9ECEA;
   --surface: #F7F8F6;
@@ -40,7 +40,7 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 760px; margin: 0 auto; }
+.wrap { max-width: 800px; margin: 0 auto; }
 .eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 h1 {
   margin: 4px 0 6px;
@@ -84,18 +84,20 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .dept:first-child { margin-top: 0; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; list-style: none; margin: 0; padding: 0; }
-.item { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; border-top: 1px solid var(--line); }
+.item { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 16px; border-top: 1px solid var(--line); }
 .item:first-child { border-top: 0; }
-@media (min-width: 640px) { .item { grid-template-columns: minmax(0, 1fr) 232px; gap: 24px; } }
+@media (min-width: 640px) { .item { grid-template-columns: minmax(0, 1fr) 250px; gap: 24px; } }
 .main, .call { min-width: 0; }
-.meta { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
-.scope { margin: 2px 0 4px; font-size: 18px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
-.who { margin: 0; }
-.who span { color: var(--muted); }
-.tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 10px 0 0; padding: 0; }
-.tags li { font-size: 12px; padding: 2px 8px; border-radius: 3px; background: var(--chip); color: var(--muted); }
-.tags li.hit { background: var(--hit); color: var(--hit-ink); font-weight: 600; }
-.call { display: flex; flex-direction: column; gap: 8px; }
+.meta { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.tasks li { position: relative; padding-left: 14px; font-weight: 500; }
+.tasks li::before { content: ""; position: absolute; left: 0; top: .62em; width: 5px; height: 5px; background: var(--muted); }
+.tasks li.hit { margin-left: -6px; padding: 2px 8px 2px 20px; border-radius: 3px; background: var(--hit); color: var(--hit-ink); font-weight: 600; }
+.tasks li.hit::before { left: 8px; background: var(--hit-ink); }
+.call { display: flex; flex-direction: column; gap: 16px; }
+.ct { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.who { margin: 0; line-height: 1.35; }
+.who span { color: var(--muted); font-size: 13px; display: block; }
 .num { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .n {
   font-family: var(--display); font-weight: 600; font-size: 28px; line-height: 1.1;
@@ -108,7 +110,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 }
 .btn:hover { border-color: var(--accent); }
 .none { margin: 0; color: var(--muted); font-size: 14px; }
-.fb { margin: 0; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.fb { margin: 0; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
 .fb b { color: var(--ink); font-weight: 600; }
 .fb .n { font-size: 22px; }
 .empty { padding: 20px 16px; }
@@ -136,62 +138,125 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 
   <footer class="foot">
     <p>Mục chưa có số điện thoại trong danh bạ: liên hệ trưởng bộ phận hoặc văn phòng điều hành để được hướng dẫn.</p>
-    <p>Nguồn: Danh bạ liên hệ công việc. Số điện thoại đã chuẩn hóa về dạng 10 số.</p>
+    <p>Nguồn: bảng phân công đầu việc theo người phụ trách. Số điện thoại đã chuẩn hóa về dạng 10 số.</p>
   </footer>
 </div>
 
 <script>
+function P(name, role, phone) { return { name: name, role: role || '', phone: phone || '' }; }
+
 var DEPTS = [
   { name: 'Phòng Bảo trì', entries: [
-    { head: 1, code: '1', scope: 'Trưởng phòng', people: ['Ngô Thanh Nhân'], role: 'Trưởng phòng', phones: ['0902528879'], tasks: ['Bảo trì'] }
+    { head: 1, contacts: [P('Ngô Thanh Nhân', 'Trưởng phòng', '0902528879')],
+      tasks: ['Bảo trì, bảo dưỡng, sửa chữa thiết bị xe cộ tại các Trạm'] }
   ]},
   { name: 'Phòng Cung ứng', entries: [
-    { head: 1, code: '2', scope: 'Trưởng phòng', people: ['Lê Văn Tuấn Thanh'], role: 'Trưởng phòng', phones: ['0973129916'],
-      tasks: ['Điều phối xe', 'Xi măng', 'Phụ gia', 'Ắc quy', 'Bảo hiểm xe', 'Kiểm định trạm', 'Vật tư sửa chữa'] },
-    { code: '2.1', scope: 'Vận chuyển, vật tư, bảo hiểm xe', people: ['Phạm Hải Anh', 'Phan Đình Tuấn', 'Lê Quang Thắng'], role: 'Chuyên viên', phones: [],
-      tasks: ['Vận chuyển', 'Vật tư', 'Bảo hiểm xe'] },
-    { code: '2.6', scope: 'Cắt cống, vận chuyển, vật tư', people: ['Ngô Thị Vân Anh', 'Nguyễn Thị Nhi'], role: 'Chuyên viên', phones: ['0347891621'],
-      tasks: ['Cắt cống', 'Vận chuyển', 'Vật tư'] }
+    { head: 1, contacts: [P('Lê Văn Tuấn Thanh', 'Trưởng phòng', '0973129916')],
+      tasks: ['Trưởng phòng Cung ứng, đầu mối chung của phòng'] },
+    { contacts: [P('Phạm Hải Anh', 'Chuyên viên Cung ứng', '0812486543')],
+      tasks: ['Vận chuyển - Điều xe, xi măng, phụ gia, kéo xe, ắc quy', 'Dụng cụ thí nghiệm, kéo xe, niêm chì, phiếu in, thuê bơm, đá, thiết bị nhỏ'] },
+    { contacts: [P('Phan Đình Tuấn', 'Chuyên viên Cung ứng', '0886597954'), P('Lê Quang Thắng', 'Chuyên viên Cung ứng', '0394164241')],
+      tasks: ['Bảo hiểm xe', 'Vật tư - sửa chữa xe, Vật tư - sửa chữa trạm', 'Xây dựng Trạm trộn, kiểm định trạm'] },
+    { contacts: [P('Ngô Thị Vân Anh, Nguyễn Thị Nhi', 'Chuyên viên Cung ứng', '0347891621')],
+      tasks: ['Cắt cống, vận chuyển, vật tư sửa chữa', 'Dầu DO, vật tư SC bồn dầu, gia công lồng thép, khuôn cống/sửa chữa khuôn', 'Kiểm định trạm, máy móc, nhớt mỡ thép, vỏ xe cẩu 19466, dụng cụ thí nghiệm'] }
   ]},
   { name: 'Phòng Kinh doanh', entries: [
-    { head: 1, code: '3', scope: 'Trưởng phòng', people: ['Dư Bích Ngọc'], role: 'Trưởng phòng', phones: ['0908054040'],
-      tasks: ['Hợp đồng', 'Tờ trình', 'Báo cáo sản lượng', 'Sự cố cung cấp bê tông', 'Hồ sơ năng lực công ty'] },
-    { code: '3.1', scope: 'Sales admin, hợp đồng, đơn hàng', people: ['Bùi Thị Tươi', 'Trương Bảo Trân'], role: 'Nhân sự kinh doanh', phones: ['0903696887'],
-      tasks: ['Sales admin', 'Hợp đồng', 'Đơn hàng'] }
+    { head: 1, contacts: [P('Dư Bích Ngọc', 'Trưởng phòng', '0908054040')],
+      tasks: ['Trưởng phòng Kinh doanh, đầu mối chung của phòng'] },
+    { contacts: [P('Bùi Thị Tươi', 'Trưởng nhóm thư ký kinh doanh', '0903696887')],
+      tasks: ['Quản lý công việc bộ phận Sales admin khối KD HCM - NT chung', 'Theo dõi Hợp đồng, PLHĐ, Tờ trình HCM - NT', 'Theo dõi tình hình hoàn thành Bảng tổng hợp khối lượng, giá trị theo quy định HĐ/PLHĐ'] },
+    { contacts: [P('Trương Bảo Trân', 'Sale Admin', '0345800484')],
+      tasks: ['Lên đơn hàng hàng ngày / công văn đi / công văn đến (lưu file / Server)', 'Công văn đi, đến'] },
+    { contacts: [P('Hà Trần Thanh Hậu', 'Thư ký kinh doanh', '')],
+      tasks: ['Báo cáo KH - KQ sản lượng ngày', 'Báo cáo sự cố cung cấp bê tông tháng', 'Phụ trách hồ sơ năng lực công ty và hồ sơ vật liệu'] },
+    { contacts: [P('Các nhân sự còn lại', '', '')],
+      tasks: ['Nhận thông tin và làm việc với khách hàng'] }
   ]},
   { name: 'Phòng Hành chính nhân sự', entries: [
-    { head: 1, code: '4', scope: 'Trưởng phòng', people: ['Trần Phước Châu Loan'], role: 'Trưởng phòng', phones: [], tasks: ['HCNS', 'Hành chính nhân sự'] },
-    { code: '4.1', scope: 'Pháp chế, hành chính, nhân sự', people: ['Quyền Hương', 'Mỹ Uyên', 'Thảo'], role: 'Nhân sự HCNS', phones: [],
-      tasks: ['Pháp chế', 'Hành chính', 'Nhân sự', 'Hồ sơ pháp lý', 'Hợp đồng dịch vụ hành chính', 'Hợp đồng lao động', 'Chấm công', 'Nghỉ phép (Base)'] },
-    { code: '4.10', scope: 'Tuyển dụng', people: ['Gia Thư', 'Thanh Nhân'], role: 'Chuyên viên', phones: ['0372355577'], tasks: ['Tuyển dụng'] },
-    { code: '4.12', scope: 'Phúc lợi, tiền lương', people: ['Hoàng Thị Thảo'], role: 'Trưởng nhóm', phones: ['0393827542'],
-      tasks: ['Phúc lợi', 'Tiền lương', 'Bảo hiểm'] }
+    { head: 1, contacts: [P('Trần Phước Châu Loan', 'Trưởng phòng', '')],
+      tasks: ['Trưởng phòng HCNS, đầu mối chung của phòng'] },
+    { contacts: [P('Đỗ Thị Quyền Hương', 'Nhân viên pháp chế', '0358167361')],
+      tasks: ['Hồ sơ giấy tờ pháp lý trạm', 'Hồ sơ giấy tờ pháp lý công ty, hợp đồng, giấy đăng ký kinh doanh…'] },
+    { contacts: [P('Phạm Nguyễn Mỹ Uyên', 'Nhân viên hành chính lễ tân', '0329324053')],
+      tasks: ['Các công việc hành chính, đặt lịch xe, VPP, bảo hộ lao động, gửi thư', 'Các hợp đồng dịch vụ hành chính (nước sinh hoạt, điện…)'] },
+    { contacts: [P('Trần Thị Thảo', 'Nhân viên HCNS', '0399477884')],
+      tasks: ['Các hồ sơ, làm ủy quyền theo yêu cầu', 'Hợp đồng lao động, quyết định thôi việc', 'Hồ sơ nhân viên, hồ sơ thôi việc', 'Thắc mắc về chấm công, nghỉ phép trên Base', 'Tờ trình, quyết định, thông báo'] },
+    { contacts: [P('Phạm Nguyễn Gia Thư, Huỳnh Thanh Nhân', 'Chuyên viên tuyển dụng', '0372355577')],
+      tasks: ['Hồ sơ, tờ trình tuyển dụng'] },
+    { contacts: [P('', 'Tuyển dụng', '0913263401')],
+      tasks: ['Yêu cầu tuyển dụng'] },
+    { contacts: [P('Hoàng Thị Thảo', 'Trưởng nhóm Phúc lợi và Tiền lương', '0393827542')],
+      tasks: ['Bảo hiểm, lương, thuế TNCN'] }
   ]},
   { name: 'Phòng Tài chính kế toán', entries: [
-    { head: 1, code: '5 · 5.1', scope: 'Tổng quát (CNC)', people: ['Nguyễn Thu Hà'], role: 'Kế toán trưởng', phones: ['0342131875'],
-      tasks: ['Chi phí hành chính', 'Hồ sơ thanh toán', 'Kế toán phải thu', 'Kế toán phải trả', 'Công ty CNC', 'Khánh Gia', 'Hoa Biển'] }
+    { contacts: [P('Nguyễn Thu Hà', 'Kế toán trưởng CNC', '0342131875')],
+      tasks: ['Phụ trách tổng'] },
+    { contacts: [P('Võ Phạm Quỳnh Như', 'Nhân viên kế toán', '0932673074')],
+      tasks: ['Phụ trách các chi phí hành chính'] },
+    { contacts: [P('Nguyễn Thị Mỹ Dung', 'Nhân viên kế toán', '0358103698')],
+      tasks: ['Các công việc, chi phí của công ty Khánh Gia và Hoa Biển'] },
+    { contacts: [P('Ngô Thị Cẩm Tú', 'Kế toán tổng hợp CNC', '0909136197')],
+      tasks: ['Phụ trách các chi phí, hồ sơ thanh toán công ty CNC', 'Các hồ sơ, chi phí liên quan kế toán phải thu', 'Các hồ sơ, chi phí liên quan kế toán phải trả'] }
   ]},
   { name: 'Phòng IT', entries: [
-    { head: 1, code: '6', scope: 'IT', people: ['Phạm Nhật Ninh'], role: 'Chuyên viên IT', phones: ['0937785757'], tasks: ['IT', 'Công nghệ thông tin'] }
+    { head: 1, contacts: [P('Phạm Nhật Ninh', 'Chuyên viên IT', '0937785757')],
+      tasks: ['Mật khẩu ứng dụng, phân quyền', 'Mạng, thiết bị máy móc: máy tính, máy photo…'] }
   ]},
   { name: 'Phòng Thiết bị vận tải', entries: [
-    { head: 1, code: '7', scope: 'Trưởng phòng', people: ['Bùi Xuân Mẫn'], role: 'Trưởng phòng', phones: ['0902518286'], tasks: ['Thiết bị vận tải'] }
+    { head: 1, contacts: [P('Bùi Xuân Mẫn', 'Trưởng phòng', '0902518286')],
+      tasks: ['Trưởng phòng Thiết bị vận tải, đầu mối chung của phòng'] },
+    { contacts: [{ name: 'Đang tuyển dụng', role: 'Admin Tổng hợp', phone: '', vacant: 1 }],
+      tasks: ['Điều phối xe xi măng, xe bơm, tạo mã số xe', 'Bảo hiểm xe, đăng kiểm xe, các yêu cầu sửa chữa xe'] }
   ]},
   { name: 'Phòng Quản lý chất lượng', entries: [
-    { head: 1, code: '8', scope: 'Giám đốc', people: ['Phan Phương Nam'], role: 'Giám đốc', phones: ['0932160630'],
-      tasks: ['Nén mẫu', 'Cấp phối', 'Vật liệu', 'Kiểm định', 'Quản lý chất lượng'] }
+    { contacts: [P('Vũ Huy Trung Tuấn', 'Trưởng phòng QLCL', '0985466570')],
+      tasks: ['Công tác nén mẫu, chuẩn bị mẫu'] },
+    { contacts: [P('Nguyễn Quang Huy', 'Phó phòng QLCL', '0827272801')],
+      tasks: ['Về cấp phối'] },
+    { head: 1, contacts: [P('Phan Phương Nam', 'Giám đốc P.QLCL', '0932160630')],
+      tasks: ['Về tổng thể vật liệu, quy trình'] }
   ]},
-  { name: 'Các trạm', entries: [
-    { head: 1, code: '9–13', scope: 'Trạm TĐ, NT, PM, LH, ĐĐ', people: ['Giám đốc Trạm'], role: 'Giám đốc / Kế toán', phones: [],
-      tasks: ['Nhân sự tại trạm', 'Điều phối tài xế', 'Hư hỏng thiết bị', 'Thủ tục hành chính nhân sự'],
-      note: 'Số của từng trạm chưa có trong danh bạ. Liên hệ trực tiếp Giám đốc Trạm tương ứng.' }
+  { name: 'Trạm Thủ Đức', entries: [
+    { head: 1, contacts: [P('Trần Đình Hoàn', 'Giám đốc nhà máy Thủ Đức', '0913707300')],
+      tasks: ['Các công việc của tài xế, các nhân sự về xe cộ, hư hỏng'] },
+    { contacts: [P('Hoàng Văn Nam', 'Kế toán HCT', '0794339666')],
+      tasks: ['Hồ sơ nhân sự, hợp đồng lao động, hồ sơ thôi việc, cách chấm công trên Base'] }
+  ]},
+  { name: 'Trạm Nhơn Trạch', entries: [
+    { head: 1, contacts: [P('Tạ Xuân Thu', 'Giám đốc nhà máy Nhơn Trạch', '0833879313')],
+      tasks: ['Các công việc của tài xế, về xe cộ'] },
+    { contacts: [P('Trương Thị Hồng Tâm', 'Kế toán HCT', '0932129076')],
+      tasks: ['Hồ sơ nhân sự, hợp đồng lao động, hồ sơ thôi việc, cách chấm công trên Base'] }
+  ]},
+  { name: 'Trạm Phú Mỹ', entries: [
+    { head: 1, contacts: [P('Nguyễn Huỳnh Lâm', 'Giám đốc nhà máy Phú Mỹ', '0939865190')],
+      tasks: ['Các công việc của tài xế, về xe cộ'] },
+    { contacts: [P('Phan Như Hoài', 'Kế toán HCT', '0769788542')],
+      tasks: ['Hồ sơ nhân sự, hợp đồng lao động, hồ sơ thôi việc, cách chấm công trên Base'] }
+  ]},
+  { name: 'Trạm Long Hậu', entries: [
+    { head: 1, contacts: [P('Nguyễn Lê Duy Khang', 'Giám đốc nhà máy Long Hậu', '0921900881')],
+      tasks: ['Các công việc của tài xế, về xe cộ'] },
+    { contacts: [P('Lê Ngọc Thư', 'Kế toán HCT', '0934097970')],
+      tasks: ['Hồ sơ nhân sự, hợp đồng lao động, hồ sơ thôi việc, cách chấm công trên Base'] }
+  ]},
+  { name: 'Trạm Đất Đỏ', entries: [
+    { head: 1, contacts: [P('Nguyễn Huỳnh Lâm', 'Giám đốc nhà máy Đất Đỏ', '0939865190')],
+      tasks: ['Các công việc của tài xế, về xe cộ'] },
+    { contacts: [P('Phạm Thị Thanh Thảo', 'Kế toán HCT', '0975279568')],
+      tasks: ['Hồ sơ nhân sự, hợp đồng lao động, hồ sơ thôi việc, cách chấm công trên Base'] }
   ]},
   { name: 'Nhà máy cống', entries: [
-    { head: 1, code: '14', scope: 'Giám đốc', people: ['Nguyễn Minh Mẫn'], role: 'Giám đốc', phones: ['0976143900'], tasks: ['Nhà máy cống'] }
+    { head: 1, contacts: [P('Nguyễn Minh Mẫn', 'Giám đốc Nhà máy Cống', '0976143900')],
+      tasks: ['Giám đốc Nhà máy Cống, đầu mối chung của nhà máy'] },
+    { contacts: [P('Trần Hoàng Giang', 'Tổ trưởng Bảo trì - Sản xuất', '0937378465')],
+      tasks: ['Các công việc của tài xế, về xe cộ'] },
+    { contacts: [P('Trần Kim Ngân', 'Kế toán HCT', '0967191773')],
+      tasks: ['Hồ sơ nhân sự, hợp đồng lao động, hồ sơ thôi việc, cách chấm công trên Base'] }
   ]}
 ];
 
-var CHIPS = ['Hợp đồng lao động', 'Bảo hiểm xe', 'Tiền lương', 'Tuyển dụng', 'Chấm công, nghỉ phép', 'Đơn hàng', 'Nén mẫu', 'Cắt cống', 'Hồ sơ thanh toán', 'Điều phối xe'];
+var CHIPS = ['Hợp đồng lao động', 'Bảo hiểm xe', 'Lương, bảo hiểm', 'Tuyển dụng', 'Chấm công, nghỉ phép', 'Đơn hàng', 'Công văn', 'Nén mẫu', 'Cấp phối', 'Điều phối xe', 'Mật khẩu, mạng', 'Hồ sơ thanh toán'];
 var STOP = ['ai', 'lo', 'la', 'trach', 've', 'cho', 'can', 'lien', 'he', 'voi', 'nguoi', 'dau', 'moi', 'nao', 'cua', 'xin', 'hoi', 'toi', 'minh', 'muon', 'tim', 'o', 'the', 'va', 'hay'];
 
 function norm(s) {
@@ -208,9 +273,8 @@ DEPTS.forEach(function (d) {
   d.entries.forEach(function (e) {
     e.dept = d;
     e.nTasks = e.tasks.map(norm);
-    e.nScope = norm(e.scope);
-    e.nPeople = norm(e.people.join(' '));
-    e.nOther = norm(d.name + ' ' + e.role + ' ' + e.code);
+    e.nPeople = norm(e.contacts.filter(function (c) { return !c.vacant; }).map(function (c) { return c.name; }).join(' '));
+    e.nOther = norm(d.name + ' ' + e.contacts.map(function (c) { return c.role + ' ' + c.phone; }).join(' '));
     ALL.push(e);
   });
 });
@@ -231,7 +295,6 @@ function scoreEntry(e, toks) {
     e.nTasks.forEach(function (t, i) {
       if (hasWord(t, tok)) { matched[i] = 1; if (!found) { score += 10; } found = true; }
     });
-    if (hasWord(e.nScope, tok)) { score += 8; found = true; }
     if (hasWord(e.nPeople, tok)) { score += 5; found = true; }
     if (hasWord(e.nOther, tok)) { score += 3; found = true; }
     if (found) { hits++; } else { miss++; }
@@ -246,6 +309,8 @@ function search(raw) {
   var scored = ALL.map(function (e, i) { var r = scoreEntry(e, toks); r.i = i; return r; });
   var sortFn = function (a, b) { return b.score - a.score || a.i - b.i; };
   var exact = scored.filter(function (r) { return r.miss === 0; }).sort(sortFn);
+  var phrased = exact.filter(function (r) { return r.score >= 100; });
+  if (phrased.length) { return { mode: 'exact', items: phrased }; }
   if (exact.length) { return { mode: 'exact', items: exact }; }
   var near = scored.filter(function (r) { return r.hits > 0; }).sort(sortFn);
   return { mode: near.length ? 'near' : 'none', items: near };
@@ -257,29 +322,30 @@ function phoneRow(p) {
     '<a class="btn" href="https://zalo.me/' + p + '" target="_blank" rel="noopener" aria-label="Nhắn Zalo số ' + fmt(p) + '">Zalo</a></div>';
 }
 
-function callBlock(e) {
-  if (e.phones.length) { return e.phones.map(phoneRow).join(''); }
-  var head = e.dept.entries.filter(function (x) { return x.head && x.phones.length; })[0];
-  var out = '<p class="none">Chưa có số trong danh bạ</p>';
-  if (head && head !== e) {
-    out += '<div class="fb">Hỏi trưởng bộ phận: <b>' + esc(head.people[0]) + '</b> (' + esc(head.role) + ')' + phoneRow(head.phones[0]) + '</div>';
-  } else {
-    out += '<p class="fb">' + esc(e.note || 'Liên hệ văn phòng điều hành để được hướng dẫn.') + '</p>';
+function fallback(e) {
+  var head = e.dept.entries.filter(function (x) { return x.head && x !== e && x.contacts[0].phone; })[0];
+  if (head) {
+    var h = head.contacts[0];
+    return '<div class="fb"><span>Hỏi trưởng bộ phận: <b>' + esc(h.name) + '</b></span>' + phoneRow(h.phone) + '</div>';
   }
-  return out;
+  return '<p class="fb">Liên hệ văn phòng điều hành để được hướng dẫn.</p>';
+}
+
+function contactHtml(c, e) {
+  var name = c.name || 'Chưa ghi tên người nhận';
+  var s = '<div class="ct"><p class="who"><strong>' + esc(name) + '</strong>' + (c.role ? '<span>' + esc(c.role) + '</span>' : '') + '</p>';
+  s += c.phone ? phoneRow(c.phone) : '<p class="none">Chưa có số trong danh bạ</p>' + fallback(e);
+  return s + '</div>';
 }
 
 function itemHtml(e, matched, showDept) {
-  var tags = e.tasks.map(function (t, i) {
+  var rows = e.tasks.map(function (t, i) {
     return '<li' + (matched && matched[i] ? ' class="hit"' : '') + '>' + esc(t) + '</li>';
   }).join('');
-  var meta = (showDept ? esc(e.dept.name) + ' · ' : '') + 'Mục ' + esc(e.code);
   return '<li class="item"><div class="main">' +
-    '<p class="meta">' + meta + '</p>' +
-    '<h3 class="scope">' + esc(e.scope) + '</h3>' +
-    '<p class="who"><strong>' + esc(e.people.join(', ')) + '</strong> <span>· ' + esc(e.role) + '</span></p>' +
-    '<ul class="tags" aria-label="Phụ trách">' + tags + '</ul>' +
-    '</div><div class="call">' + callBlock(e) + '</div></li>';
+    (showDept ? '<p class="meta">' + esc(e.dept.name) + '</p>' : '') +
+    '<ul class="tasks" aria-label="Đầu việc">' + rows + '</ul></div>' +
+    '<div class="call">' + e.contacts.map(function (c) { return contactHtml(c, e); }).join('') + '</div></li>';
 }
 
 var qEl = document.getElementById('q');
