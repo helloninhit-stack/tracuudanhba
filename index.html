@@ -1,0 +1,323 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tra cứu đầu mối</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+<style>
+/* Bố cục: một cột hẹp như bảng chỉ dẫn công trường. Ô tìm kiếm lớn ở trên, kết quả là các dòng có số điện thoại to, cùng một cột bên phải. */
+:root {
+  --bg: #E9ECEA;
+  --surface: #F7F8F6;
+  --ink: #161C1A;
+  --muted: #55615C;
+  --line: #CBD2CE;
+  --accent: #B4410B;
+  --chip: #DDE2DF;
+  --hit: #F6D9C6;
+  --hit-ink: #5E2204;
+  --display: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  --body: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121615; --surface: #1A201E; --ink: #E7ECE9; --muted: #9AA7A1; --line: #2E3733;
+    --accent: #F59A5C; --chip: #252D2A; --hit: #5A2D14; --hit-ink: #FFD9BF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121615; --surface: #1A201E; --ink: #E7ECE9; --muted: #9AA7A1; --line: #2E3733;
+  --accent: #F59A5C; --chip: #252D2A; --hit: #5A2D14; --hit-ink: #FFD9BF;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+.eyebrow { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 {
+  margin: 4px 0 6px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(40px, 10vw, 60px);
+  line-height: 1;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.lede { margin: 0 0 22px; color: var(--muted); max-width: 52ch; }
+label.ask { display: block; margin-bottom: 6px; font-weight: 600; }
+#q {
+  width: 100%;
+  height: 56px;
+  padding: 0 16px;
+  font: 500 17px var(--body);
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 6px;
+}
+#q::placeholder { color: var(--muted); opacity: .8; }
+#q:focus { outline: none; border-color: var(--accent); }
+.chips-label { margin: 14px 0 8px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.chip {
+  min-height: 36px; padding: 0 12px;
+  font: 500 14px var(--body); color: var(--ink);
+  background: var(--chip); border: 1px solid transparent; border-radius: 4px; cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#status { margin: 26px 0 10px; font-size: 14px; color: var(--muted); min-height: 21px; }
+#status b { color: var(--ink); }
+.dept {
+  margin: 26px 0 8px;
+  font-family: var(--display); font-weight: 600; font-size: 20px;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+.dept:first-child { margin-top: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; list-style: none; margin: 0; padding: 0; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; border-top: 1px solid var(--line); }
+.item:first-child { border-top: 0; }
+@media (min-width: 640px) { .item { grid-template-columns: minmax(0, 1fr) 232px; gap: 24px; } }
+.main, .call { min-width: 0; }
+.meta { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.scope { margin: 2px 0 4px; font-size: 18px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
+.who { margin: 0; }
+.who span { color: var(--muted); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 10px 0 0; padding: 0; }
+.tags li { font-size: 12px; padding: 2px 8px; border-radius: 3px; background: var(--chip); color: var(--muted); }
+.tags li.hit { background: var(--hit); color: var(--hit-ink); font-weight: 600; }
+.call { display: flex; flex-direction: column; gap: 8px; }
+.num { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.n {
+  font-family: var(--display); font-weight: 600; font-size: 28px; line-height: 1.1;
+  letter-spacing: .02em; color: var(--accent); font-variant-numeric: tabular-nums; user-select: text;
+}
+.btn {
+  min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center;
+  font: 500 13px var(--body); color: var(--ink); text-decoration: none;
+  background: transparent; border: 1px solid var(--line); border-radius: 4px; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.none { margin: 0; color: var(--muted); font-size: 14px; }
+.fb { margin: 0; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.fb b { color: var(--ink); font-weight: 600; }
+.fb .n { font-size: 22px; }
+.empty { padding: 20px 16px; }
+.empty p { margin: 0 0 6px; }
+.foot { margin-top: 32px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.foot p { margin: 0 0 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Danh bạ liên hệ công việc</p>
+    <h1>Tra cứu đầu mối</h1>
+    <p class="lede">Gõ việc cần xử lý để biết ai phụ trách và gọi số nào. Có thể gõ không dấu.</p>
+  </header>
+
+  <label class="ask" for="q">Việc cần ai lo?</label>
+  <input id="q" type="search" autocomplete="off" enterkeyhint="search" placeholder="hợp đồng lao động, bảo hiểm xe, nén mẫu…">
+
+  <p class="chips-label">Hay tìm</p>
+  <ul class="chips" id="chips"></ul>
+
+  <p id="status" aria-live="polite"></p>
+  <div id="out"></div>
+
+  <footer class="foot">
+    <p>Mục chưa có số điện thoại trong danh bạ: liên hệ trưởng bộ phận hoặc văn phòng điều hành để được hướng dẫn.</p>
+    <p>Nguồn: Danh bạ liên hệ công việc. Số điện thoại đã chuẩn hóa về dạng 10 số.</p>
+  </footer>
+</div>
+
+<script>
+var DEPTS = [
+  { name: 'Phòng Bảo trì', entries: [
+    { head: 1, code: '1', scope: 'Trưởng phòng', people: ['Ngô Thanh Nhân'], role: 'Trưởng phòng', phones: ['0902528879'], tasks: ['Bảo trì'] }
+  ]},
+  { name: 'Phòng Cung ứng', entries: [
+    { head: 1, code: '2', scope: 'Trưởng phòng', people: ['Lê Văn Tuấn Thanh'], role: 'Trưởng phòng', phones: ['0973129916'],
+      tasks: ['Điều phối xe', 'Xi măng', 'Phụ gia', 'Ắc quy', 'Bảo hiểm xe', 'Kiểm định trạm', 'Vật tư sửa chữa'] },
+    { code: '2.1', scope: 'Vận chuyển, vật tư, bảo hiểm xe', people: ['Phạm Hải Anh', 'Phan Đình Tuấn', 'Lê Quang Thắng'], role: 'Chuyên viên', phones: [],
+      tasks: ['Vận chuyển', 'Vật tư', 'Bảo hiểm xe'] },
+    { code: '2.6', scope: 'Cắt cống, vận chuyển, vật tư', people: ['Ngô Thị Vân Anh', 'Nguyễn Thị Nhi'], role: 'Chuyên viên', phones: ['0347891621'],
+      tasks: ['Cắt cống', 'Vận chuyển', 'Vật tư'] }
+  ]},
+  { name: 'Phòng Kinh doanh', entries: [
+    { head: 1, code: '3', scope: 'Trưởng phòng', people: ['Dư Bích Ngọc'], role: 'Trưởng phòng', phones: ['0908054040'],
+      tasks: ['Hợp đồng', 'Tờ trình', 'Báo cáo sản lượng', 'Sự cố cung cấp bê tông', 'Hồ sơ năng lực công ty'] },
+    { code: '3.1', scope: 'Sales admin, hợp đồng, đơn hàng', people: ['Bùi Thị Tươi', 'Trương Bảo Trân'], role: 'Nhân sự kinh doanh', phones: ['0903696887'],
+      tasks: ['Sales admin', 'Hợp đồng', 'Đơn hàng'] }
+  ]},
+  { name: 'Phòng Hành chính nhân sự', entries: [
+    { head: 1, code: '4', scope: 'Trưởng phòng', people: ['Trần Phước Châu Loan'], role: 'Trưởng phòng', phones: [], tasks: ['HCNS', 'Hành chính nhân sự'] },
+    { code: '4.1', scope: 'Pháp chế, hành chính, nhân sự', people: ['Quyền Hương', 'Mỹ Uyên', 'Thảo'], role: 'Nhân sự HCNS', phones: [],
+      tasks: ['Pháp chế', 'Hành chính', 'Nhân sự', 'Hồ sơ pháp lý', 'Hợp đồng dịch vụ hành chính', 'Hợp đồng lao động', 'Chấm công', 'Nghỉ phép (Base)'] },
+    { code: '4.10', scope: 'Tuyển dụng', people: ['Gia Thư', 'Thanh Nhân'], role: 'Chuyên viên', phones: ['0372355577'], tasks: ['Tuyển dụng'] },
+    { code: '4.12', scope: 'Phúc lợi, tiền lương', people: ['Hoàng Thị Thảo'], role: 'Trưởng nhóm', phones: ['0393827542'],
+      tasks: ['Phúc lợi', 'Tiền lương', 'Bảo hiểm'] }
+  ]},
+  { name: 'Phòng Tài chính kế toán', entries: [
+    { head: 1, code: '5 · 5.1', scope: 'Tổng quát (CNC)', people: ['Nguyễn Thu Hà'], role: 'Kế toán trưởng', phones: ['0342131875'],
+      tasks: ['Chi phí hành chính', 'Hồ sơ thanh toán', 'Kế toán phải thu', 'Kế toán phải trả', 'Công ty CNC', 'Khánh Gia', 'Hoa Biển'] }
+  ]},
+  { name: 'Phòng IT', entries: [
+    { head: 1, code: '6', scope: 'IT', people: ['Phạm Nhật Ninh'], role: 'Chuyên viên IT', phones: ['0937785757'], tasks: ['IT', 'Công nghệ thông tin'] }
+  ]},
+  { name: 'Phòng Thiết bị vận tải', entries: [
+    { head: 1, code: '7', scope: 'Trưởng phòng', people: ['Bùi Xuân Mẫn'], role: 'Trưởng phòng', phones: ['0902518286'], tasks: ['Thiết bị vận tải'] }
+  ]},
+  { name: 'Phòng Quản lý chất lượng', entries: [
+    { head: 1, code: '8', scope: 'Giám đốc', people: ['Phan Phương Nam'], role: 'Giám đốc', phones: ['0932160630'],
+      tasks: ['Nén mẫu', 'Cấp phối', 'Vật liệu', 'Kiểm định', 'Quản lý chất lượng'] }
+  ]},
+  { name: 'Các trạm', entries: [
+    { head: 1, code: '9–13', scope: 'Trạm TĐ, NT, PM, LH, ĐĐ', people: ['Giám đốc Trạm'], role: 'Giám đốc / Kế toán', phones: [],
+      tasks: ['Nhân sự tại trạm', 'Điều phối tài xế', 'Hư hỏng thiết bị', 'Thủ tục hành chính nhân sự'],
+      note: 'Số của từng trạm chưa có trong danh bạ. Liên hệ trực tiếp Giám đốc Trạm tương ứng.' }
+  ]},
+  { name: 'Nhà máy cống', entries: [
+    { head: 1, code: '14', scope: 'Giám đốc', people: ['Nguyễn Minh Mẫn'], role: 'Giám đốc', phones: ['0976143900'], tasks: ['Nhà máy cống'] }
+  ]}
+];
+
+var CHIPS = ['Hợp đồng lao động', 'Bảo hiểm xe', 'Tiền lương', 'Tuyển dụng', 'Chấm công, nghỉ phép', 'Đơn hàng', 'Nén mẫu', 'Cắt cống', 'Hồ sơ thanh toán', 'Điều phối xe'];
+var STOP = ['ai', 'lo', 'la', 'trach', 've', 'cho', 'can', 'lien', 'he', 'voi', 'nguoi', 'dau', 'moi', 'nao', 'cua', 'xin', 'hoi', 'toi', 'minh', 'muon', 'tim', 'o', 'the', 'va', 'hay'];
+
+function norm(s) {
+  return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+}
+function fmt(p) { return p.replace(/^(\d{4})(\d{3})(\d{3})$/, '$1 $2 $3'); }
+function hasWord(text, tok) { return (' ' + text).indexOf(' ' + tok) !== -1; }
+
+var ALL = [];
+DEPTS.forEach(function (d) {
+  d.entries.forEach(function (e) {
+    e.dept = d;
+    e.nTasks = e.tasks.map(norm);
+    e.nScope = norm(e.scope);
+    e.nPeople = norm(e.people.join(' '));
+    e.nOther = norm(d.name + ' ' + e.role + ' ' + e.code);
+    ALL.push(e);
+  });
+});
+
+function tokens(raw) {
+  var q = norm(raw).replace(/\bphu trach\b/g, ' ');
+  return q.split(' ').filter(function (t) { return t && STOP.indexOf(t) === -1; });
+}
+
+function scoreEntry(e, toks) {
+  var phrase = toks.join(' ');
+  var score = 0, hits = 0, miss = 0, matched = {};
+  e.nTasks.forEach(function (t, i) {
+    if (hasWord(t, phrase)) { score += 100; matched[i] = 1; }
+  });
+  toks.forEach(function (tok) {
+    var found = false;
+    e.nTasks.forEach(function (t, i) {
+      if (hasWord(t, tok)) { matched[i] = 1; if (!found) { score += 10; } found = true; }
+    });
+    if (hasWord(e.nScope, tok)) { score += 8; found = true; }
+    if (hasWord(e.nPeople, tok)) { score += 5; found = true; }
+    if (hasWord(e.nOther, tok)) { score += 3; found = true; }
+    if (found) { hits++; } else { miss++; }
+  });
+  if (!e.head) { score += 5; }
+  return { e: e, score: score, hits: hits, miss: miss, matched: matched };
+}
+
+function search(raw) {
+  var toks = tokens(raw);
+  if (!toks.length) { return { mode: raw.trim() ? 'none' : 'all', items: [] }; }
+  var scored = ALL.map(function (e, i) { var r = scoreEntry(e, toks); r.i = i; return r; });
+  var sortFn = function (a, b) { return b.score - a.score || a.i - b.i; };
+  var exact = scored.filter(function (r) { return r.miss === 0; }).sort(sortFn);
+  if (exact.length) { return { mode: 'exact', items: exact }; }
+  var near = scored.filter(function (r) { return r.hits > 0; }).sort(sortFn);
+  return { mode: near.length ? 'near' : 'none', items: near };
+}
+
+function phoneRow(p) {
+  return '<div class="num"><span class="n">' + fmt(p) + '</span>' +
+    '<a class="btn" href="tel:' + p + '">Gọi</a>' +
+    '<a class="btn" href="https://zalo.me/' + p + '" target="_blank" rel="noopener" aria-label="Nhắn Zalo số ' + fmt(p) + '">Zalo</a></div>';
+}
+
+function callBlock(e) {
+  if (e.phones.length) { return e.phones.map(phoneRow).join(''); }
+  var head = e.dept.entries.filter(function (x) { return x.head && x.phones.length; })[0];
+  var out = '<p class="none">Chưa có số trong danh bạ</p>';
+  if (head && head !== e) {
+    out += '<div class="fb">Hỏi trưởng bộ phận: <b>' + esc(head.people[0]) + '</b> (' + esc(head.role) + ')' + phoneRow(head.phones[0]) + '</div>';
+  } else {
+    out += '<p class="fb">' + esc(e.note || 'Liên hệ văn phòng điều hành để được hướng dẫn.') + '</p>';
+  }
+  return out;
+}
+
+function itemHtml(e, matched, showDept) {
+  var tags = e.tasks.map(function (t, i) {
+    return '<li' + (matched && matched[i] ? ' class="hit"' : '') + '>' + esc(t) + '</li>';
+  }).join('');
+  var meta = (showDept ? esc(e.dept.name) + ' · ' : '') + 'Mục ' + esc(e.code);
+  return '<li class="item"><div class="main">' +
+    '<p class="meta">' + meta + '</p>' +
+    '<h3 class="scope">' + esc(e.scope) + '</h3>' +
+    '<p class="who"><strong>' + esc(e.people.join(', ')) + '</strong> <span>· ' + esc(e.role) + '</span></p>' +
+    '<ul class="tags" aria-label="Phụ trách">' + tags + '</ul>' +
+    '</div><div class="call">' + callBlock(e) + '</div></li>';
+}
+
+var qEl = document.getElementById('q');
+var outEl = document.getElementById('out');
+var statusEl = document.getElementById('status');
+
+function render() {
+  var raw = qEl.value;
+  var r = search(raw);
+  if (r.mode === 'all') {
+    statusEl.textContent = 'Toàn bộ danh bạ, ' + ALL.length + ' đầu mối. Gõ vào ô trên để lọc theo việc.';
+    outEl.innerHTML = DEPTS.map(function (d) {
+      return '<h2 class="dept">' + esc(d.name) + '</h2><ul class="panel">' +
+        d.entries.map(function (e) { return itemHtml(e, null, false); }).join('') + '</ul>';
+    }).join('');
+    return;
+  }
+  if (r.mode === 'none') {
+    statusEl.innerHTML = 'Không tìm thấy đầu mối cho “<b>' + esc(raw.trim()) + '</b>”.';
+    outEl.innerHTML = '<div class="panel empty"><p>Thử gõ ngắn hơn, ví dụ “hợp đồng”, “xe”, “lương”, hoặc chọn một mục ở phần “Hay tìm”.</p><p class="none">Nếu vẫn chưa rõ, liên hệ trưởng bộ phận hoặc văn phòng điều hành.</p></div>';
+    return;
+  }
+  statusEl.innerHTML = (r.mode === 'near' ? 'Không có kết quả khớp hoàn toàn. ' : '') +
+    '<b>' + r.items.length + '</b> đầu mối ' + (r.mode === 'near' ? 'gần đúng' : 'cho') + ' “<b>' + esc(raw.trim()) + '</b>”';
+  outEl.innerHTML = '<ul class="panel">' + r.items.map(function (x) { return itemHtml(x.e, x.matched, true); }).join('') + '</ul>';
+}
+
+document.getElementById('chips').innerHTML = CHIPS.map(function (c) {
+  return '<li><button type="button" class="chip" data-q="' + esc(c) + '">' + esc(c) + '</button></li>';
+}).join('');
+
+qEl.addEventListener('input', render);
+document.addEventListener('click', function (ev) {
+  var chip = ev.target.closest ? ev.target.closest('.chip') : null;
+  if (chip) { qEl.value = chip.getAttribute('data-q'); render(); window.scrollTo(0, 0); }
+});
+
+render();
+</script>
+
+</body></html>
